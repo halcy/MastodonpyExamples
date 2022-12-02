@@ -49,6 +49,7 @@ table tbody tr:nth-child(odd) {
 """
 
 FOOT = """
+<a href="https://github.com/halcy/MastodonpyExamples/tree/master/01_latency_observatory">source code</a>
 </body></html>
 """
 app = Flask(__name__)
