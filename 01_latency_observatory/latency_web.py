@@ -7,7 +7,7 @@ from latencies import LatencyWatcher
 accounts = [
     ("halcy", "mastodon.social"),
     ("halcy", "glitch.social"),
-    ("halcy", "icosahedron.website"),
+    ("latencyobs", "icosahedron.website"),
 ]
 
 watcher = LatencyWatcher(accounts)
