@@ -82,7 +82,7 @@ def base_page():
                 lat_date = datetime.datetime.fromtimestamp(latency_data[1])
                 lat_date_str = lat_date.astimezone(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
                 alt_text = lat_str + " at " + lat_date_str
-                response += '<td><img src="/plot?acc1={}&acc2={}" alt="{}"</td>'.format(str(id1), str(id2), alt_text)
+                response += '<td><img src="plot?acc1={}&acc2={}" alt="{}"</td>'.format(str(id1), str(id2), alt_text)
         response += "</tr>"
 
     # Foot
