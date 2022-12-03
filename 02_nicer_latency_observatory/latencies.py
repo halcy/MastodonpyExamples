@@ -163,7 +163,7 @@ class LatencyWatcher():
             latency_copy = copy.deepcopy(self.latency_info)
             
             data_x = list(map(lambda x: datetime.datetime.fromtimestamp(x[1]).astimezone(datetime.timezone.utc), latency_copy[account][account2]))
-            data_y = list(map(lambda x: x[0], latency_copy[account][account2]))
+            data_y = list(map(lambda x: x[0] * 1000, latency_copy[account][account2]))
 
             # Basic matplotlib plot
             fig = plt.figure(figsize=(3.5, 3.5))
