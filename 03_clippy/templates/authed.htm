@@ -60,10 +60,11 @@
   </style>
 </head>
 <body>
-  <form action="login" method="post">
-    <h1>C L I P P Y</h1>
-    <input  name="instance" type="text" placeholder="enter your instance url to start" autofocus>
-    <button type="submit">Log in</button>
+  <form action="revoke" method="get">
+    <h1>Logged in as {{account}}.</h1>
+    <p>You are constantly being monitored.</p>
+    <p>{{debug}}</p>
+    <button type="submit">Revoke access</button>
   </form>
 </body>
 </html>

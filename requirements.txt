@@ -3,3 +3,4 @@ flask
 mastodon.py
 numpy
 matplotlib
+validators
