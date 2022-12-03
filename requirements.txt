@@ -1,3 +1,5 @@
 locket
 flask
 mastodon.py
+numpy
+matplotlib
