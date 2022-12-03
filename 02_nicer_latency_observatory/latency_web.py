@@ -52,7 +52,7 @@ a {
     color: #FFFFFF;
 }
 </style>
-<h1>⟴ Mastodon Latency Observatory <span style="font-size:17px"><a href="https://github.com/halcy/MastodonpyExamples/tree/master/01_latency_observatory">on github</a></h1>
+<h1>⟴ Mastodon Latency Observatory <span style="font-size:17px"><a href="https://github.com/halcy/MastodonpyExamples/tree/master/02_nicer_latency_observatory">on github</a></h1>
 """
 
 FOOT = """
