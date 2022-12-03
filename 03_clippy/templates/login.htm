@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #450084;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    form {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+      width: 500px;
+    }
+
+    input[type="text"] {
+      width: 500px;
+      padding: 0.5rem;
+      border: none;
+      border-bottom: 0.1rem solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      font-size: 1.25rem;
+      color: #fff;
+      background: #450084;
+      transition: border-color 0.2s ease-in-out;
+      margin-left: -1.0rem;
+      padding-left: 1.5rem;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #6633cc;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #7e4ee8;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+  <form>
+    <h1>C L I P P Y</h1>
+    <input  name="username" type="text" placeholder="Full username (user@instance.com)" autofocus>
+    <button type="submit">Log in</button>
+  </form>
+</body>
+</html>
