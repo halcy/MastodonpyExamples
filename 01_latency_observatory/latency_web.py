@@ -83,4 +83,4 @@ def base_page():
     return HEAD + response + FOOT
 
 if __name__ == '__main__':
-    app.run(host = "0.0.0.0")
+    app.run()
