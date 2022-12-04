@@ -5,6 +5,7 @@ import re
 import random
 import logging
 import threading
+import traceback
 
 from flask import Flask, session, render_template, redirect, request, abort, g
 import sqlite3
@@ -76,7 +77,7 @@ table_exists = query_db("SELECT name FROM sqlite_master WHERE type='table' AND n
 if not table_exists:
     query = """
     CREATE TABLE users (
-        account TEXT,
+        account TEXT NOT NULL UNIQUE,
         last_update NUMERIC,
         embed1 TEXT,
         embed2 TEXT,
@@ -89,7 +90,7 @@ table_exists = query_db("SELECT name FROM sqlite_master WHERE type='table' AND n
 if not table_exists:
     query = """
     CREATE TABLE suggestions (
-        account TEXT,
+        account TEXT NOT NULL UNIQUE,
         suggestions TEXT,
         mode TEXT
     )
@@ -99,12 +100,12 @@ if not table_exists:
 # User insert / update / delete
 def db_insert_user(account):
     query = """
-    INSERT INTO users (account, last_update, embed1, embed2, embed3)
+    INSERT OR IGNORE INTO users (account, last_update, embed1, embed2, embed3)
     VALUES (?, 0, "", "", "")
     """
     query_db(query, (account,))
     query = """
-    INSERT INTO suggestions (account, suggestions, mode)
+    INSERT OR IGNORE INTO suggestions (account, suggestions, mode)
     VALUES (?, "", "show")
     """
     query_db(query, (account,))
@@ -245,6 +246,12 @@ def get_clustered_clip_encodings(text_list):
         return clusters
 
 def get_client_credential(instance):
+    # Try to be permissive
+    if "://" in instance:
+        instance = "://".join(instance.split("://")[1:])
+    if "/" in instance:        
+        instance = instance.split("/")[0]
+
     # Validate
     if not instance.startswith("http://") or instance.startswith("https://"):
         instance = "https://" + instance
@@ -288,6 +295,8 @@ def update_account(username, instance):
     statuses_fetch = api.account_statuses(me, limit = 40)
     statuses = []
     for i in range(10):
+        if statuses_fetch is None:
+            break
         for status in statuses_fetch:
             status_text = insecure_strip_html(status.content).strip()
             if len(status_text) > 0:
@@ -300,6 +309,7 @@ def update_account(username, instance):
             break
     if len(statuses) < 3:
         return
+    logging.info("Updating based on " + str(len(statuses)) + " statuses.")
 
     # Embed and cluster
     embeds = get_clustered_clip_encodings(statuses)
@@ -369,11 +379,23 @@ def refresh_worker():
                 update_account(username, instance)
                 time.sleep(5)
             except Exception as e:
+                _, _, exc_tb = sys.exc_info()
                 logging.warning("Error on user update for " + next_user + ": " + str(e))
+                traceback.print_exc()                
 
 @app.route('/switchfollow')
 def switchfollow():
-    account = "{}@{}".format(session["user_name"], session["instance"])
+    # See if we have suggestions available
+    user_name = session["user_name"]
+    instance = session["instance"]
+    
+    # Try to be permissive but also paranoid
+    if "://" in instance:
+        instance = "://".join(instance.split("://")[1:])
+    if "/" in instance:        
+        instance = instance.split("/")[0]
+        
+    account = "{}@{}".format(user_name, instance)
     follow_mode = db_get_follow_mode(account)
     if follow_mode == "show":
         db_set_follow_mode(account, "follow")
@@ -389,7 +411,16 @@ def index():
         return render_template('login.htm')
     else:
         # See if we have suggestions available
-        account = "{}@{}".format(session["user_name"], session["instance"])
+        user_name = session["user_name"]
+        instance = session["instance"]
+        
+        # Try to be permissive but also paranoid
+        if "://" in instance:
+            instance = "://".join(instance.split("://")[1:])
+        if "/" in instance:        
+            instance = instance.split("/")[0]
+
+        account = "{}@{}".format(user_name, instance)
         suggestions = db_current_suggestions(account)
 
         # Show suggestions or processing indicator
@@ -405,11 +436,11 @@ def index():
                 followmode = follow_mode_switch
             )
         else:
-            account_links = ["https://" + session["instance"] + "/@" + x for x in suggestions]
+            account_links = ["https://" + instance + "/@" + x for x in suggestions]
             links = list(zip(suggestions, account_links))
             return render_template(
                 'authed.htm', 
-                account="{}@{}".format(session["user_name"], session["instance"]),
+                account="{}@{}".format(user_name, instance),
                 processing = False,
                 links = links,
                 followmode = follow_mode_switch
@@ -417,23 +448,39 @@ def index():
 
 @app.route('/revoke')
 def revoke():
+    # See if we have suggestions available
+    user_name = session["user_name"]
+    instance = session["instance"]
+        
+    # Try to be permissive but also paranoid
+    if "://" in instance:
+        instance = "://".join(instance.split("://")[1:])
+    if "/" in instance:        
+        instance = instance.split("/")[0]
+
     # Lock credential DB
     secret_registry.lock_credentials()
 
     # Revoke token
     try:
-        user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, session["instance"], "user", session["user_name"])
+        user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
         secret_registry.revoke_credential(user_credential)
     except:
         pass
     
     # Remove from DB
-    db_delete_user(session["user_name"] + "@" + session["instance"])
+    db_delete_user(user_name + "@" + instance)
 
     # Also clear the session
     session["logged_in"] = False
-    del session["user_name"] 
-    del session["instance"] 
+    try:
+        del session["user_name"] 
+    except:
+        pass
+    try:
+        del session["instance"] 
+    except:
+        pass
 
     # Unlock credential DB
     secret_registry.release_credentials()
@@ -446,6 +493,12 @@ def auth():
     # Get the oauth code
     oauth_code = request.args.get('code')
     instance = request.args.get('state')
+
+    # Try to be permissive
+    if "://" in instance:
+        instance = "://".join(instance.split("://")[1:])
+    if "/" in instance:        
+        instance = instance.split("/")[0]
 
     # Get client credential and create API
     client_credential = get_client_credential(instance)
@@ -466,7 +519,7 @@ def auth():
         secret_registry.update_meta_time(user_credential_temp)
 
         # Move to final place
-        user_name = api.me().acct
+        user_name = api.me().acct.split("@")[0]
         user_credential_final = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
         secret_registry.move_credential(user_credential_temp, user_credential_final)
 
@@ -493,27 +546,42 @@ def login():
         instance = request.form['instance']
         client_credential = get_client_credential(instance)
 
+        # Try to be permissive
+        if "://" in instance:
+            instance = "://".join(instance.split("://")[1:])
+        if "/" in instance:        
+            instance = instance.split("/")[0]
+
         # Create a Mastodon api instance and generate oauth URL
         api = Mastodon(client_id = client_credential)
         login_url = api.auth_request_url(
             scopes = SCOPES_TO_REQUEST,
             redirect_uris = OAUTH_TARGET_URL,
-            state=instance
+            state = instance
         )
 
         # Redirect the user to the OAuth login URL
         return redirect(login_url)
     except:
+        traceback.print_exc()
+
         # Just clear credentials and redirect to root
         session["logged_in"] = False
-        del session["user_name"] 
-        del session["instance"]
+        try:
+            del session["user_name"] 
+        except:
+            pass
+        try:
+            del session["instance"] 
+        except:
+            pass
         return redirect(APP_BASE_URL)
 
-if __name__ == '__main__':
-    # Run update worker
-    worker_thread = threading.Thread(target=refresh_worker)
-    worker_thread.start()
+# Run update worker
+worker_thread = threading.Thread(target=refresh_worker)
+worker_thread.start()
 
+
+if __name__ == '__main__':
     # Run webapp
     app.run()
