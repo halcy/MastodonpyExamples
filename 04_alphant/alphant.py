@@ -111,12 +111,16 @@ def db_update_post(account, other_account, post):
 
 # Get current posts from DB
 def db_get_posts(account):
+    ascdesc = "ASC"
+    if int(time.time() / 60 * 60) % 2 == 0:
+        ascdesc = "DESC"
     query = """
         SELECT post
         FROM posts
         WHERE account = ?
-        ORDER BY other_account ASC
+        ORDER BY other_account
         """
+    query = query + " " + ascdesc
     posts_json = query_db(query, (account, ))
     posts = [json.loads(x[0], object_hook=Mastodon._Mastodon__json_hooks) for x in posts_json]
     return posts
@@ -282,6 +286,23 @@ def index():
             posts = posts
         )
 
+@app.route('/post_status', methods=["POST"])
+def post_status():
+    # Get user info
+    user_name, instance, account = get_session_user()
+
+    # Send post
+    post_text = request.form['text']
+    try:
+        user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
+        api = Mastodon(access_token = user_credential, request_timeout = 10)
+        api.status_post(post_text)
+    except:
+        pass
+    
+    # Back to root
+    return redirect(APP_BASE_URL)
+
 @app.route('/reply', methods=["POST"])
 def reply():
     # Get user info
@@ -298,7 +319,6 @@ def reply():
         reply_to_post = api.status(reply_to)
         api.status_reply(reply_to_post, reply_text)
     except:
-        traceback.print_exc()
         pass
 
     # Back to root
