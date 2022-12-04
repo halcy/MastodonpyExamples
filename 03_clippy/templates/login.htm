@@ -57,6 +57,18 @@
     button:active {
       transform: scale(0.95);
     }
+
+    p.privacy {
+      margin-top: 200px;
+      font-size: 13px;
+      display: block;
+      position: absolute;
+      bottom: 0px;
+    }
+    
+    a {
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -64,6 +76,18 @@
     <h1>C L I P P Y</h1>
     <input  name="instance" type="text" placeholder="enter your instance url to start" autofocus>
     <button type="submit">Log in</button>
+    <hr style="margin-top:20px; border-top: 1px solid white; display: block;">
+    <p style="line-height: 24px; text-align: justify;">Clippy is an application that looks at your 100 newest post, calculates <a href="https://openai.com/blog/clip/">CLIP</a> text embeddings for them, clusters them 
+       into three clusters (because as we all know, no one talks about more than threee things), then picks some users weighted towards those with similar embeddings and
+       shows them to you. Optionally, it can also automatically follow these users if you aren't already (and put them in a list for easy review).</p>
   </form>
+
+  <p class="privacy">
+    privacy statement: I store the data I need to store to provide the service, and none besides. 
+    I will not look at your data except to fix things when they break. 
+    You can delete your data by pressing the "Revoke" button.
+    This is a hobbyist project, service is best-effort.
+    <a href="https://github.com/halcy/MastodonpyExamples/tree/master/03_clippy">Source code available.</a>
+  </p>
 </body>
 </html>

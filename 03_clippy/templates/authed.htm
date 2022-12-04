@@ -57,14 +57,31 @@
     button:active {
       transform: scale(0.95);
     }
+
+    a {
+      color: #FFFFFF;
+    }
   </style>
 </head>
 <body>
   <form action="revoke" method="get">
     <h1>Logged in as {{account}}.</h1>
     <p>You are constantly being monitored.</p>
-    <p>{{debug}}</p>
+    <p>
+      {% if processing %}
+        Still processing, check back in a bit.
+      {% else %}
+        Observe:
+          <ul>
+              {% for text, href in links %}
+                  <li><a href="{{ href }}">{{ text }}</a></li>
+              {% endfor %}
+          </ul>
+        Updates are performed approximately every three hours, more frequent when less than 7 suggestions are available. Follow mode may fail to add users to the list if they have their account locked.
+      {% endif %}
+    </p>
     <button type="submit">Revoke access</button>
+    <button type="submit" formaction="switchfollow">Turn follow mode {{ followmode }}</button>
   </form>
 </body>
 </html>

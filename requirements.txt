@@ -4,3 +4,8 @@ mastodon.py
 numpy
 matplotlib
 validators
+torch 
+torchvision 
+torchaudio
+transformers
+fast-pytorch-kmeans
