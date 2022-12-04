@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      height: 100vh;
+      background-color: #450084;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    div.topbar {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+    }
+
+    div.mainscreen {
+      padding: 10px;
+    }
+
+    input[type="text"] {
+      width: 280px;
+      margin: 0;
+      margin-top: 10px;
+      padding: 0.5rem;
+      border: none;
+      border-bottom: 0.1rem solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      font-size: 1.25rem;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      transition: border-color 0.2s ease-in-out;
+      position: relative;
+      bottom: 0px;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin: 0;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #6633cc;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+      float: right;
+    }
+
+    button:hover {
+      background-color: #7e4ee8;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    a {
+      transition: all 0.5s ease;
+      color: #FFFFFF;
+    }
+    
+    h1 {
+      display: inline;
+      margin: 0;
+    }
+    
+    img.avatar {
+      width: 50px;
+      height: 50px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+    }
+
+    div.post {
+      display: inline-block;
+      width: 300px;
+      height: 300px;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+      background-color: #440055;
+      transition: all 0.5s ease;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+    
+    div.post:hover {
+      background-color: #660077;
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+    }
+
+    div.content {
+      margin-top: 10px;
+      padding-top: 10px;
+      transition: all 0.5s ease;
+      border-top: 1px solid #FFFFFF;
+    }
+
+    div.content p {
+      margin-bottom: 10px;
+      line-height: 20px;
+    }
+
+    div.display-name {
+      display: inline-block;
+      font-weight: bold;
+      padding-left: 10px;
+      line-height: 20px;
+    }
+
+    img.attachment {
+      width:300px;
+      height:auto;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <form action="revoke" method="get">
+      <h1>Logged in as {{account}}.</h1>
+      <button type="submit">Revoke access</button>
+    </form>
+  </div>
+  <div class="mainscreen">
+    {% for post in posts %}
+    <div class="post">
+        <div class="header">
+            <img class="avatar" src="{{ post.account.avatar }}" alt="{{ post.account.display_name }}" />
+            <div class="display-name">{{ post.account.acct|lower }} <br/> {{ process_emoji(post.account.display_name, post.account.emojis)|safe }}</div>
+        </div>
+        <div class="content">
+            {{ process_emoji(post.content, post.emojis)|safe }}
+            {% for attachment in post.media_attachments %}
+            <a href="{{ attachment.url }}" target="_blank">
+              <img class="attachment" src="{{ attachment.preview_url }}" />
+            </a>
+            {% endfor %}
+        </div>
+      <form action="reply" method="post">
+        <input type="hidden" name="to" value="{{ post.id }}"/>
+        <input type="text" name="text" placeholder="reply..."/>
+      </form>
+    </div>    
+    {% endfor %}
+  </div>
+</body>
+</html>
