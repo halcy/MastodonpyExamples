@@ -1,8 +1,6 @@
 import os
 import sys
 import time
-import re
-import random
 import json
 import logging
 import threading
@@ -217,40 +215,44 @@ def delete_from_db_resilient(id):
 streams = {}
 def refresh_worker():
     while True:
-        # Start new streams where needed
-        accounts = db_get_accounts()
-        for account in accounts:
-            if not account in streams:
-                try:
-                    # Get login
-                    logging.info("Starting stream for " + account)
-                    user_name, instance = account.split("@")
-                    user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
-                    api = Mastodon(access_token = user_credential, request_timeout = 10)
-
-                    # Stream
-                    listener = streaming.CallbackStreamListener(
-                        update_handler = lambda status, account_bind = account: post_to_db_resilient(account_bind, status),
-                        status_update_handler = lambda status, account_bind = account: post_to_db_resilient(account_bind, status),
-                        delete_handler = delete_from_db_resilient
-                    )
-                    streams[account] = api.stream_user(listener, run_async = True, reconnect_async = True)
-                except Exception as e:
-                    logging.warning("Could not start stream:" + str(e))
-
-        # Reap old streams where not 
-        for stream in streams.keys():
-            if not stream in accounts:
-                try:
-                    # Kill stream (should already be dead, but be extra paraoid)
-                    logging.info("Reaping stream for" + stream)
+        try:
+            # Start new streams where needed
+            accounts = db_get_accounts()
+            for account in accounts:
+                if not account in streams:
                     try:
-                        streams[account].close()
-                    except:
-                        pass
-                    del streams[account]
-                except Exception as e:
-                    logging.warning("Could not reap stream:" + str(e))
+                        # Get login
+                        logging.info("Starting stream for " + account)
+                        user_name, instance = account.split("@")
+                        user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
+                        api = Mastodon(access_token = user_credential, request_timeout = 10)
+
+                        # Stream
+                        listener = streaming.CallbackStreamListener(
+                            update_handler = lambda status, account_bind = account: post_to_db_resilient(account_bind, status),
+                            status_update_handler = lambda status, account_bind = account: post_to_db_resilient(account_bind, status),
+                            delete_handler = delete_from_db_resilient
+                        )
+                        streams[account] = api.stream_user(listener, run_async = True, reconnect_async = True)
+                    except Exception as e:
+                        logging.warning("Could not start stream:" + str(e))
+
+            # Reap old streams where not
+            keys = streams.keys()
+            for stream in keys:
+                if not stream in accounts:
+                    try:
+                        # Kill stream (should already be dead, but be extra paraoid)
+                        logging.info("Reaping stream for" + stream)
+                        try:
+                            streams[account].close()
+                        except:
+                            pass
+                        del streams[account]
+                    except Exception as e:
+                        logging.warning("Could not reap stream:" + str(e))
+        except:
+            pass
         time.sleep(10)
 
 def process_emoji(text, emojis):
