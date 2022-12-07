@@ -33,7 +33,6 @@ APP_BASE_URL = "/day03/"
 SIMILAR_USERS_COUNT = 7
 SECONDS_BETWEEN_REFRESH = 60 * 60 * 3
 
-
 # Logging setup
 logging.basicConfig(
     stream = sys.stdout, 
@@ -44,6 +43,9 @@ logging.basicConfig(
 # Set the secret key to a random value
 app = Flask(__name__)
 app_data_registry.set_flask_session_info(app, APP_PREFIX)
+
+clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
 # DB stuff
 def get_db():
@@ -225,13 +227,8 @@ def cosine_sim(user_embed, other_embeds):
 
 # Pytorch stuff
 def get_model():
-    model_data = getattr(g, '_clip_model_data', None)
-    if model_data is None:
-        clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-        g._clip_model_data = (clip_model, clip_processor)
-    else:
-        clip_model, clip_processor = model_data
+    global clip_model
+    global clip_processor
     return clip_model, clip_processor
 
 def get_clustered_clip_encodings(text_list):
