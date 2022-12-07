@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      background-color: #450084;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    div.contentbox {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+      width: 800px;
+      height: 100%;
+    }
+
+    input[type="text"] {
+      width: 800px;
+      padding: 0.5rem;
+      border: none;
+      border-bottom: 0.1rem solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      font-size: 1.25rem;
+      color: #fff;
+      background: #450084;
+      transition: border-color 0.2s ease-in-out;
+      margin-left: -1.0rem;
+      padding-left: 1.5rem;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #6633cc;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #7e4ee8;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    p.privacy {
+      margin: 0;
+      width: 100%;
+      font-size: 13px;
+      display: block;
+      position: fixed;
+      bottom: 0px;
+      background-color: #450084;
+      border-top: 1px solid #FFFFFF;
+    }
+    
+    a {
+      color: white;
+    }
+
+    img.avatar {
+      width: 50px;
+      height: 50px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+    }
+
+    div.post {
+      display: block;
+      width: 760px;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+      background-color: #440055;
+      transition: all 0.5s ease;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+    
+    div.post:hover {
+      background-color: #660077;
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+    }
+
+    div.content {
+      margin-top: 10px;
+      padding-top: 10px;
+      transition: all 0.5s ease;
+      border-top: 1px solid #FFFFFF;
+    }
+
+    div.content p {
+      margin-bottom: 10px;
+      line-height: 20px;
+    }
+
+    div.display-name {
+      display: inline-block;
+      font-weight: bold;
+      padding-left: 10px;
+      padding-right: 10px;
+      line-height: 20px;
+    }
+
+    img.attachment {
+      width:300px;
+      height:auto;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    div.header {
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="contentbox">
+  <form action="login" method="post">
+    <h1>🐘➠ | toot-it-forward</h1>
+    <input  name="instance" type="text" placeholder="enter your instance url" autofocus>
+    <input  name="new_post" type="text" placeholder="enter a post for the next person" autofocus>
+    <button type="submit">Submit</button>
+    <hr style="margin-top:20px; border-top: 1px solid white; display: block;">
+    <p style="line-height: 24px; text-align: justify;">Submit a post to toot-it-forward and it will be posted to the next person to submit a post, while the last persons submitted post will be posted
+    to your account at the same time. You won't know who your received post came from and where your submitted post goes to until 24 hours later, at which time posts submitted will be listed below
+    for 24 hours. <strong>Please don't be rude.</strong></p>
+  </form>
+  <hr style="margin-top:20px; border-top: 1px solid white; display: block;">
+  <h1>Day-old posts:</h1>
+  {% for post in posts %}
+  <a href="{{ post.url }}" style="text-decoration: none;">
+    <div class="post">
+        <div class="header">
+            <div class="display-name" style="text-align: right;">{{ post.post_from.acct|lower }} <br/> {{ process_emoji(post.post_from.display_name, post.post_from.emojis)|safe }}</div>
+            <img class="avatar" src="{{ post.post_from.avatar }}" alt="{{ post.post_from.display_name }}" />
+            <div style="font-size: 32px; padding-left: 10px; padding-right: 10px;">➠</div>
+            <img class="avatar" src="{{ post.account.avatar }}" alt="{{ post.account.display_name }}" />
+            <div class="display-name">{{ post.account.acct|lower }} <br/> {{ process_emoji(post.account.display_name, post.account.emojis)|safe }}</div>
+        </div>
+        <div class="content">
+            {{ process_emoji(post.content, post.emojis)|safe }}
+            {% for attachment in post.media_attachments %}
+            <a href="{{ attachment.url }}" target="_blank">
+              <img class="attachment" src="{{ attachment.preview_url }}" />
+            </a>
+            {% endfor %}
+        </div>
+    </div>    
+  </a>
+  {% endfor %}
+  </div>
+
+  <p class="privacy">
+    privacy statement: I store the data I need to store to provide the service, and none besides, which in this case is: your account name, the post you submitted. 
+    I will not look at your data except to fix things when they break or to investigate complaints. You can contact me at <a href="https://icosahedron.website/@halcy">halcy@icosahedron.webiste.</a>
+    This is a hobbyist project, service is best-effort.
+    <a href="https://github.com/halcy/MastodonpyExamples/tree/master/05_toot_it_forward">Source code available.</a> <a href="https://mastolab.kal-tsit.halcy.de/">Other Mastodon API experiments.</a> 
+  </p>
+</body>
+</html>
