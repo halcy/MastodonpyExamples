@@ -235,24 +235,24 @@ def refresh_worker():
                         )
                         streams[account] = api.stream_user(listener, run_async = True, reconnect_async = True)
                     except Exception as e:
-                        logging.warning("Could not start stream:" + str(e))
+                        logging.warning("Could not start stream: " + str(e))
 
             # Reap old streams where not
-            keys = streams.keys()
+            keys = list(streams.keys())
             for stream in keys:
                 if not stream in accounts:
                     try:
                         # Kill stream (should already be dead, but be extra paraoid)
-                        logging.info("Reaping stream for" + stream)
+                        logging.info("Reaping stream for " + stream)
                         try:
-                            streams[account].close()
+                            streams[stream].close()
                         except:
                             pass
-                        del streams[account]
+                        del streams[stream]
                     except Exception as e:
                         logging.warning("Could not reap stream:" + str(e))
-        except:
-            pass
+        except Exception as e:
+            logging.warning("General error in stream manager:" + str(e))
         time.sleep(10)
 
 def process_emoji(text, emojis):
