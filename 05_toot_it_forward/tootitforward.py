@@ -5,6 +5,7 @@ import json
 import logging
 import traceback
 import uuid
+import pickle
 
 from flask import Flask, session, render_template, redirect, request, abort, g
 import sqlite3
@@ -21,6 +22,7 @@ CLIENT_NAME = "TootItForward"
 APP_PREFIX = "day05_tootitforward"
 MASTO_SECRET = os.environ["MASTODON_SECRET"]
 SCOPES_TO_REQUEST = ["read:accounts", "read:statuses", "write:statuses"]
+SCOPES_FALLBACK = ["read", "write"]
 OAUTH_TARGET_URL = "https://mastolab.kal-tsit.halcy.de/day05/auth"
 APP_BASE_URL = "/day05/"
 
@@ -36,15 +38,20 @@ app = Flask(__name__)
 app_data_registry.set_flask_session_info(app, APP_PREFIX, True)
 
 # Globals
-post_register = {
-    "initial": ("halcy@icosahedron.website", "First post!", {
-        "acct": "halcy@icosahedron.website",
-        "display_name": "halcy",  
-        "avatar": "https://icosahedron.website/system/accounts/avatars/000/000/001/original/media.jpg"
-    })
-}
-instance_register = {}
-current_post_uuid = "initial"
+state_file = app_data_registry.get_state_file(APP_PREFIX)
+if os.path.exists(state_file):
+    with open(state_file, 'rb') as f:
+        post_register, instance_register, current_post_uuid = pickle.load(f)
+else:
+    post_register = {
+        "initial": ("halcy@icosahedron.website", "First post!", {
+            "acct": "halcy@icosahedron.website",
+            "display_name": "halcy",  
+            "avatar": "https://icosahedron.website/system/accounts/avatars/000/000/001/original/media.jpg"
+        })
+    }
+    instance_register = {}
+    current_post_uuid = "initial"
 
 # DB stuff
 def get_db():
@@ -131,17 +138,29 @@ def get_client_credential(instance):
     # Lock credential DB
     secret_registry.lock_credentials()
 
+    fallback_scopes = False
     try:
         # Get app credential, register new if needed
         client_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "client")
         if not secret_registry.have_credential(client_credential):
-            Mastodon.create_app(
-                CLIENT_NAME,
-                api_base_url = instance,
-                scopes = SCOPES_TO_REQUEST,
-                to_file = client_credential,
-                redirect_uris = [OAUTH_TARGET_URL]
-            )
+            try:
+                Mastodon.create_app(
+                    CLIENT_NAME,
+                    api_base_url = instance,
+                    scopes = SCOPES_TO_REQUEST,
+                    to_file = client_credential,
+                    redirect_uris = [OAUTH_TARGET_URL]
+                )
+            except:
+                # Special akkoma fallback
+                Mastodon.create_app(
+                    CLIENT_NAME,
+                    api_base_url = instance,
+                    scopes = SCOPES_FALLBACK,
+                    to_file = client_credential,
+                    redirect_uris = [OAUTH_TARGET_URL]
+                )
+                fallback_scopes = True
             secret_registry.update_meta_time(client_credential)
     except:
         client_credential = None
@@ -149,7 +168,7 @@ def get_client_credential(instance):
     # Unlock credential DB
     secret_registry.release_credentials()
 
-    return client_credential
+    return client_credential, fallback_scopes
 
 def process_emoji(text, emojis):
     for emoji in emojis:
@@ -171,6 +190,7 @@ def auth():
     global post_register
     global instance_register
     global current_post_uuid
+    global state_file
 
     # Get the oauth code
     uuid_str = request.args.get('state')
@@ -179,7 +199,7 @@ def auth():
     del instance_register[uuid_str]
 
     # Get client credential and create API
-    client_credential = get_client_credential(instance)
+    client_credential, _ = get_client_credential(instance)
     api = Mastodon(client_id = client_credential)
 
     # Lock credential DB (we also use this lock for everything else)
@@ -188,11 +208,19 @@ def auth():
     # Log in
     try:
         # Authenticate
-        api.log_in(
-            code = oauth_code,
-            scopes = SCOPES_TO_REQUEST,
-            redirect_uri = OAUTH_TARGET_URL,
-        )
+        try:
+            api.log_in(
+                code = oauth_code,
+                scopes = SCOPES_TO_REQUEST,
+                redirect_uri = OAUTH_TARGET_URL,
+            )
+        except:
+            # Special akkoma fallback
+            api.log_in(
+                code = oauth_code,
+                scopes = SCOPES_FALLBACK,
+                redirect_uri = OAUTH_TARGET_URL,
+            )
         account = api.me().acct
 
         # Send the post
@@ -203,6 +231,10 @@ def auth():
         post_register[uuid_str] = (account, post_register[uuid_str][1], post.account)
         current_post_uuid = uuid_str
         
+        # Dump state
+        with open(state_file, 'wb') as f:
+            pickle.dump((post_register, instance_register, current_post_uuid), f)
+
         # Store in DB
         post["post_from"] = current_post_account
         db_add_post(current_post_user, account, post)
@@ -228,18 +260,26 @@ def login():
     try:
         # Get a client
         instance = norm_instance_url(request.form['instance'])
-        client_credential = get_client_credential(instance)
+        client_credential, fallback_scopes = get_client_credential(instance)
 
         # Post store UUID
         uuid_str = str(uuid.uuid1())
         
         # Create a Mastodon api instance and generate oauth URL
         api = Mastodon(client_id = client_credential)
-        login_url = api.auth_request_url(
-            scopes = SCOPES_TO_REQUEST,
-            redirect_uris = OAUTH_TARGET_URL,
-            state = uuid_str
-        )
+        if not fallback_scopes:
+            login_url = api.auth_request_url(
+                scopes = SCOPES_TO_REQUEST,
+                redirect_uris = OAUTH_TARGET_URL,
+                state = uuid_str
+            )
+        else:
+            # Special akkoma fallback
+            login_url = api.auth_request_url(
+                scopes = SCOPES_FALLBACK,
+                redirect_uris = OAUTH_TARGET_URL,
+                state = uuid_str
+            )
 
         # Store data
         post_register[uuid_str] = (None, new_post)

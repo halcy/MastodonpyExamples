@@ -24,3 +24,9 @@ def get_db_file(app_prefix):
     Return a file name for a database file
     """
     return appdata_dir + "db_" + app_prefix + ".db"
+
+def get_state_file(app_prefix):
+    """
+    Return a file name for a database file
+    """
+    return appdata_dir + "state_" + app_prefix + ".pkl"
