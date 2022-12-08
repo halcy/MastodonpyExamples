@@ -198,7 +198,7 @@
             {% else %}
             <div style="display: inline-block; margin-left:10px; margin-right: 10px; font-weight: bold;">{{ ui("boost_verbs_past") }}</div>
             <img class="avatar" src="{{ post.reblog.account.avatar }}" alt="{{ post.reblog.account.display_name }}" />
-            <div class="display-name">{{ post.reblog.account.acct|lower }} <br/> {{ process_emoji(post.account.display_name, post.account.emojis)|safe }}</div>
+            <div class="display-name">{{ post.reblog.account.acct|lower }} <br/> {{ process_emoji(post.reblog.account.display_name, post.reblog.account.emojis)|safe }}</div>
             {% endif %}
             <div class="date">{{ dateformat(post.created_at) }}</div>
         </div>
