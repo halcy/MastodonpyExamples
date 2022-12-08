@@ -1,0 +1,30 @@
+<form action="reply" method="post" style="display: inline-block; width: fit-content;">
+  <input type="hidden" name="to" value="{{ post.id }}"/>
+  <input type="text" name="text" placeholder="{{ ui("reply_verbs")|capitalize }}..."/>
+  <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("post_verbs")|capitalize }}!</button>
+</form>
+{% if not post.favourited %}
+<form action="fav" method="post" style="display: inline-block; width: fit-content; margin-left: 50px;">
+  <input type="hidden" name="which" value="{{ post.id }}"/>
+  <button type="submit">{{ ui("emoji_left") }} {{ ui("fav_verbs")|capitalize }}</button>
+</form>
+{% else %}
+<form action="unfav" method="post" style="display: inline-block; width: fit-content; margin-left: 50px;">
+    <input type="hidden" name="which" value="{{ post.id }}"/>
+    <button type="submit" class="activated">{{ ui("emoji_left") }} {{ ui("unfav_verbs")|capitalize }}</button>
+  </form>
+{% endif %}
+{% if not post.reblogged %}
+<form action="boost" method="post" style="display: inline-block; width: fit-content;">
+  <input type="hidden" name="which" value="{{ post.id }}"/>
+  <button type="submit">{{ ui("emoji_left") }} {{ ui("boost_verbs")|capitalize }}</button>
+</form>
+{% else %}
+<form action="unboost" method="post" style="display: inline-block; width: fit-content;">
+    <input type="hidden" name="which" value="{{ post.id }}"/>
+    <button type="submit" class="activated">{{ ui("emoji_left") }} {{ ui("unboost_verbs")|capitalize }}</button>
+  </form>
+{% endif %}
+<form action="{{ post.url }}" method="get" style="display: inline-block; width: fit-content;">
+  <button type="submit">{{ ui("emoji_right") }} {{ ui("open_verbs")|capitalize }}</button>
+</form>

@@ -1,0 +1,9 @@
+{{ process_emoji(post.content, post.emojis)|safe }}
+{% if post.poll %}
+(Polls unsupported)
+{% endif %}
+{% for attachment in post.media_attachments %}
+<a href="{{ attachment.url }}" target="_blank">
+    <img class="attachment" src="{{ attachment.preview_url }}" />
+</a>
+{% endfor %}

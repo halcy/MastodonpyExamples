@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      height: 100vh;
+      background-color: #450084;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    div.topbar {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+    }
+
+    div.mainscreen {
+      padding: 10px;
+    }
+
+    input[type="text"] {
+      width: 280px;
+      margin: 0;
+      margin-top: 10px;
+      padding: 0.5rem;
+      border: none;
+      border-bottom: 0.1rem solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      font-size: 1.25rem;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      transition: border-color 0.2s ease-in-out;
+      position: relative;
+      bottom: 0px;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin: 0;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #6633cc;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button.activated {
+      margin: 0;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #FFF;
+      color: #6633cc;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #7e4ee8;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    a {
+      transition: all 0.5s ease;
+      color: #FFFFFF;
+    }
+    
+    h1 {
+      display: inline;
+      margin: 0;
+    }
+    
+    img.avatar {
+      width: 50px;
+      height: 50px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+    }
+
+    div.post {
+      display: inline-block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+      background-color: #440055;
+      transition: all 0.5s ease;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+    
+    div.post:hover {
+      background-color: #660077;
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+    }
+
+    div.content {
+      margin-top: 10px;
+      padding-top: 10px;
+      transition: all 0.5s ease;
+      border-top: 1px solid #FFFFFF;
+    }
+
+    div.content p {
+      margin-bottom: 10px;
+      line-height: 20px;
+    }
+
+    div.display-name {
+      display: inline-block;
+      font-weight: bold;
+      padding-left: 10px;
+      padding-right: 10px;
+      line-height: 20px;
+    }
+
+    img.attachment {
+      width:300px;
+      height:auto;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    div.postform {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid white;
+    }
+    div.date {
+      float: right;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+    <h1>{{ ui("emoji_left") }}{{ ui("emoji_right") }} | {{ ui("logged_in_phrases") }} {{account}}</h1>
+    <span style="font-size: 16px; display: inline-block; margin-left: 30px;"><a href="https://mastolab.kal-tsit.halcy.de/">{{ ui("other_stuff_phrases")|capitalize }}</a></span>
+    <form action="revoke" method="get" style="display: inline; float: right;">
+      <button type="submit" style="margin-top: 10px;">{{ ui("log_out_phrases")|capitalize }}</button>
+    </form>
+    </div>
+    <div class="postform">
+    <form action="post_status" method="post" style="display: inline-block;">
+      <input type="text" name="text" placeholder="New {{ ui("post_verbs") }}..." style="width: 500px;"/>
+      <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("post_verbs")|capitalize }}!</button>
+    </form>
+    <div style="display: inline-block; width: 50px;"></div>
+    {% if posts._pagination_prev["min_id"] %}
+    <form action="" method="get" style="display: inline-block;">
+      <input type="hidden" name="min_id" value="{{ posts._pagination_prev["min_id"] }}">
+      <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("emoji_left") }} {{ ui("prev_page_phrases")|capitalize }}</button>
+    </form>
+    {% endif %}
+    <form action="" method="get" style="display: inline-block;">
+      <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("home_page_phrases")|capitalize }}</button>
+    </form>
+    {% if posts._pagination_next["max_id"] %}
+    <form action="" method="get" style="display: inline-block;">
+      <input type="hidden" name="max_id" value="{{ posts._pagination_next["max_id"] }}">
+      <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("next_page_phrases")|capitalize }} {{ ui("emoji_right") }}</button>
+    </form>
+    {% endif %}
+  </div>
+  </div>
+  <div class="mainscreen">
+    {% for post in posts %}
+    <div class="post">
+        <div class="header">
+            <div class="display-name" style="text-align: right;">{{ post.account.acct|lower }} <br/> {{ process_emoji(post.account.display_name, post.account.emojis)|safe }}</div>
+            <img class="avatar" src="{{ post.account.avatar }}" alt="{{ post.account.display_name }}" />
+            {% if not post.reblog %}
+            <div style="display: inline-block; margin-left:10px; margin-right: 10px; font-weight: bold;">{{ ui("post_verbs_past") }}:</div>
+            {% else %}
+            <div style="display: inline-block; margin-left:10px; margin-right: 10px; font-weight: bold;">{{ ui("boost_verbs_past") }}</div>
+            <img class="avatar" src="{{ post.reblog.account.avatar }}" alt="{{ post.reblog.account.display_name }}" />
+            <div class="display-name">{{ post.reblog.account.acct|lower }} <br/> {{ process_emoji(post.account.display_name, post.account.emojis)|safe }}</div>
+            {% endif %}
+            <div class="date">{{ dateformat(post.created_at) }}</div>
+        </div>
+        {% if not post.reblog %}
+        <div class="content">
+          {% with post=post %}
+            {% include "post_content.htm" %}
+          {% endwith %}
+        </div>
+        {% else %}
+        <div class="content">
+          <div style="border-left: 3px solid #FFFFFF; padding-left: 10px;">
+            {% with post=post.reblog %}
+              {% include "post_content.htm" %}
+            {% endwith %}
+          </div>
+        </div>
+        {% endif %}
+        {% if not post.reblog %}
+          {% with post=post %}
+            {% include "post_actions.htm" %}
+          {% endwith %}
+        {% else %}
+          {% with post=post.reblog %}
+            {% include "post_actions.htm" %}
+          {% endwith %}
+        {% endif %}
+    </div>    
+    {% endfor %}
+  </div>
+</body>
+</html>
