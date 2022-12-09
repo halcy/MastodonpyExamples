@@ -50,8 +50,8 @@ def get_name_for(prefix, secret, instance, cred_type, user = None):
         raise Exception("No zero length strings allowed")
 
     key = global_secret + "@@@\n" + secret + "@@@\n" + cred_type + "@@@\n" + instance
-    if cred_type == user:
-        key = cred_type + "@@@\n" + user
+    if cred_type == "user":
+        key += "@@@\n" + user
     
     return db_path + prefix + "_" + cred_type + "_" + hashlib.sha256(key.encode("utf-8")).hexdigest() + ".secret"
 

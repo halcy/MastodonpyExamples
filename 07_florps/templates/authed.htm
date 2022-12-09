@@ -178,11 +178,8 @@
     </form>
     </div>
     <div class="postform">
-    <form action="post_status" method="post" style="display: inline-block;">
-      <input type="text" name="text" placeholder="New {{ ui("post_verbs") }}..." style="width: 500px;"/>
-      <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("post_verbs")|capitalize }}!</button>
-    </form>
-  </div>
+      {% include "form_post.htm" %}
+    </div>
   </div>
   <div class="rotate">
     <div class="mainscreen">

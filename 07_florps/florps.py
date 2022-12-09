@@ -6,7 +6,7 @@ import traceback
 import random
 import datetime
 
-from flask import Flask, session, render_template, redirect, request, abort, g
+from flask import Flask, session, render_template, redirect, request, abort
 
 sys.path.append("../tooling/")
 import secret_registry
@@ -117,34 +117,39 @@ app.jinja_env.globals.update(dateformat = dateformat)
 
 @app.route('/')
 def index():
-    # Check if the user is already logged in
-    if not "logged_in" in session or session["logged_in"] == False:
-        # Render the login page if the user is not logged in
+    try:
+        # Check if the user is already logged in
+        if not "logged_in" in session or session["logged_in"] == False:
+            # Render the login page if the user is not logged in
+            return render_template('login.htm')
+        else:
+            # Get user data from session
+            user_name, instance, account = get_session_user()
+
+            # Get args
+            min_id = request.args.get('min_id')
+            max_id = request.args.get('max_id')
+
+            user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
+            api = Mastodon(access_token = user_credential, request_timeout = 10)
+            posts = api.timeline_home(
+                limit = 40,
+                min_id = min_id,
+                max_id = max_id
+            )
+
+            # Render
+            next_id = posts._pagination_prev["min_id"] + 1
+            return render_template(
+                'authed.htm', 
+                account = account,
+                posts = posts,
+                next_id = next_id
+            )
+    except:
+        # clear the session
+        log_off_session()
         return render_template('login.htm')
-    else:
-        # Get user data from session
-        user_name, instance, account = get_session_user()
-
-        # Get args
-        min_id = request.args.get('min_id')
-        max_id = request.args.get('max_id')
-
-        user_credential = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
-        api = Mastodon(access_token = user_credential, request_timeout = 10)
-        posts = api.timeline_home(
-            limit = 40,
-            min_id = min_id,
-            max_id = max_id
-        )
-
-        # Render
-        next_id = posts._pagination_prev["min_id"] + 1
-        return render_template(
-            'authed.htm', 
-            account = account,
-            posts = posts,
-            next_id = next_id
-        )
 
 @app.route('/posts')
 def posts():
@@ -199,7 +204,7 @@ def post_status():
         pass
     
     # Back to root
-    return redirect(APP_BASE_URL)
+    return render_template("form_post.htm")
 
 @app.route('/reply', methods=["POST"])
 def reply():
@@ -352,6 +357,8 @@ def auth():
 
         # Move to final place
         user_name = api.me().acct.split("@")[0]
+        logging.info("New login: " + user_name + " from " + instance)
+        
         user_credential_final = secret_registry.get_name_for(APP_PREFIX, MASTO_SECRET, instance, "user", user_name)
         secret_registry.move_credential(user_credential_temp, user_credential_final)
     
@@ -374,7 +381,6 @@ def login():
         # Get a client
         instance = norm_instance_url(request.form['instance'])
         client_credential = get_client_credential(instance)
-        print(client_credential)
 
         # Try to be permissive
         if "://" in instance:
