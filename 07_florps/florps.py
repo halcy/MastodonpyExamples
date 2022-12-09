@@ -16,8 +16,8 @@ import validators
 from mastodon import Mastodon, streaming
 
 # Settings
-CLIENT_NAME = "Mastomash"
-APP_PREFIX = "day07_mastomash"
+CLIENT_NAME = "Florps"
+APP_PREFIX = "day07_florps"
 MASTO_SECRET = os.environ["MASTODON_SECRET"]
 SCOPES_TO_REQUEST = ["read", "write"]
 OAUTH_TARGET_URL = "https://mastolab.kal-tsit.halcy.de/day07/auth"
