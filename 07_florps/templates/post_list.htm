@@ -1,0 +1,11 @@
+{% if next_id != 0 %}
+<div hx-get="posts?min_id={{ next_id }}" hx-trigger="load delay:10s" hx-swap="outerHTML"></div>
+{% endif %}
+{% for post in posts %}
+    {% with post=post %}
+        {% include "post.htm" %}
+    {% endwith %}
+{% endfor %}
+{% if next_id == 0 %}
+<div hx-get="posts?max_id={{ posts._pagination_next["max_id"] }}" hx-trigger="intersect once" hx-swap="outerHTML">Loading more posts...</div>
+{% endif %}

@@ -1,0 +1,38 @@
+<div class="post">
+    <div class="header">
+        <div class="display-name" style="text-align: right;">{{ post.account.acct|lower }} <br/> {{ process_emoji(post.account.display_name, post.account.emojis)|safe }}</div>
+        <img class="avatar" src="{{ post.account.avatar }}" alt="{{ post.account.display_name }}" />
+        {% if not post.reblog %}
+        <div style="display: inline-block; margin-left:10px; margin-right: 10px; font-weight: bold;">{{ ui("post_verbs_past") }}:</div>
+        {% else %}
+        <div style="display: inline-block; margin-left:10px; margin-right: 10px; font-weight: bold;">{{ ui("boost_verbs_past") }}</div>
+        <img class="avatar" src="{{ post.reblog.account.avatar }}" alt="{{ post.reblog.account.display_name }}" />
+        <div class="display-name">{{ post.reblog.account.acct|lower }} <br/> {{ process_emoji(post.reblog.account.display_name, post.reblog.account.emojis)|safe }}</div>
+        {% endif %}
+        <div class="date">{{ dateformat(post.created_at) }}</div>
+    </div>
+    {% if not post.reblog %}
+    <div class="content">
+      {% with post=post %}
+        {% include "post_content.htm" %}
+      {% endwith %}
+    </div>
+    {% else %}
+    <div class="content">
+      <div style="border-left: 3px solid #FFFFFF; padding-left: 10px;">
+        {% with post=post.reblog %}
+          {% include "post_content.htm" %}
+        {% endwith %}
+      </div>
+    </div>
+    {% endif %}
+    {% if not post.reblog %}
+      {% with post=post %}
+        {% include "post_actions.htm" %}
+      {% endwith %}
+    {% else %}
+      {% with post=post.reblog %}
+        {% include "post_actions.htm" %}
+      {% endwith %}
+    {% endif %}
+</div>

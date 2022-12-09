@@ -9,3 +9,4 @@ torchvision
 torchaudio
 transformers
 fast-pytorch-kmeans
+htmx

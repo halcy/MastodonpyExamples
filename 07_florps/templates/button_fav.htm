@@ -1,0 +1,12 @@
+
+{% if not post.favourited %}
+<form hx-post="fav" hx-swap="outerHTML" style="display: inline-block; width: fit-content; margin-left: 50px;">
+    <input type="hidden" name="which" value="{{ post.id }}"/>
+    <button type="submit">⭐ {{ ui("fav_verbs")|capitalize }}</button>
+</form>
+{% else %}
+<form hx-post="unfav" hx-swap="outerHTML" style="display: inline-block; width: fit-content; margin-left: 50px;">
+    <input type="hidden" name="which" value="{{ post.id }}"/>
+    <button type="submit" class="activated">⭐ {{ ui("unfav_verbs")|capitalize }}</button>
+</form>
+{% endif %}

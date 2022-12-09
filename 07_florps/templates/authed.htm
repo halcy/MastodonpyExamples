@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/htmx.org@1.5.0"></script>
+  <style>
+    body {
+      height: 100vh;
+      background-color: #450084;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    div.topbar {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+      height: 120px;
+    }
+
+    div.mainscreen {
+      padding: 10px;
+      padding-left: 160px;
+    }
+
+    div.rotate {
+      width: 100vh;
+      height: 100vw;
+      overflow-y: scroll;
+      transform: rotate(-90deg);
+      transform-origin: top left;
+      margin-top: 100vh;
+    }
+
+    input[type="text"] {
+      width: 280px;
+      margin: 0;
+      margin-top: 10px;
+      padding: 0.5rem;
+      border: none;
+      border-bottom: 0.1rem solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      font-size: 1.25rem;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      transition: border-color 0.2s ease-in-out;
+      position: relative;
+      bottom: 0px;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin: 0;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #6633cc;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button.activated {
+      margin: 0;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #FFF;
+      color: #6633cc;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #7e4ee8;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    a {
+      transition: all 0.5s ease;
+      color: #FFFFFF;
+    }
+    
+    h1 {
+      display: inline;
+      margin: 0;
+    }
+    
+    img.avatar {
+      width: 50px;
+      height: 50px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+    }
+
+    div.post {
+      display: inline-block;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+      background-color: #440055;
+      transition: all 0.5s ease;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      width: 100%;
+    }
+    
+    div.post:hover {
+      background-color: #660077;
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+    }
+
+    div.content {
+      margin-top: 10px;
+      padding-top: 10px;
+      transition: all 0.5s ease;
+      border-top: 1px solid #FFFFFF;
+    }
+
+    div.content p {
+      margin-bottom: 10px;
+      line-height: 20px;
+    }
+
+    div.display-name {
+      display: inline-block;
+      font-weight: bold;
+      padding-left: 10px;
+      padding-right: 10px;
+      line-height: 20px;
+    }
+
+    img.attachment {
+      width:300px;
+      height:auto;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    div.postform {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid white;
+    }
+    div.date {
+      float: right;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+    <h1>{{ ui("emoji_left") }}{{ ui("emoji_right") }} | {{ ui("logged_in_phrases") }} {{account}}</h1>
+    <span style="font-size: 16px; display: inline-block; margin-left: 30px;"><a href="https://mastolab.kal-tsit.halcy.de/">{{ ui("other_stuff_phrases")|capitalize }}</a></span>
+    <form action="revoke" method="get" style="display: inline; float: right;">
+      <button type="submit" style="margin-top: 10px;">{{ ui("log_out_phrases")|capitalize }}</button>
+    </form>
+    </div>
+    <div class="postform">
+    <form action="post_status" method="post" style="display: inline-block;">
+      <input type="text" name="text" placeholder="New {{ ui("post_verbs") }}..." style="width: 500px;"/>
+      <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("post_verbs")|capitalize }}!</button>
+    </form>
+  </div>
+  </div>
+  <div class="rotate">
+    <div class="mainscreen">
+      {% with posts=posts %}
+        {% include "post_list.htm" %}
+      {% endwith %}
+      <div hx-get="posts?max_id={{ posts[-1]._pagination_next["max_id"] }}" hx-trigger="intersect once" hx-swap="outerHTML">Loading more posts...</div>
+    </div>
+  </div>
+</body>
+</html>

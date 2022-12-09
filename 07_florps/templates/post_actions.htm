@@ -1,0 +1,10 @@
+<form hx-post="reply" style="display: inline-block; width: fit-content;">
+  <input type="hidden" name="to" value="{{ post.id }}"/>
+  <input type="text" name="text" placeholder="{{ ui("reply_verbs")|capitalize }}..."/>
+  <button type="submit" style="min-width: 100px; margin-left: 10px;">{{ ui("post_verbs")|capitalize }}!</button>
+</form>
+{% include "button_fav.htm" %}
+{% include "button_boost.htm" %}
+<form action="{{ post.url }}" method="get" style="display: inline-block; width: fit-content;">
+  <button type="submit">🗁 {{ ui("open_verbs")|capitalize }}</button>
+</form>
