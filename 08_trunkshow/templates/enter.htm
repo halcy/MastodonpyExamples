@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #450084;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    form {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+      width: 500px;
+    }
+
+    input[type="text"] {
+      width: 500px;
+      padding: 0.5rem;
+      border: none;
+      border-bottom: 0.1rem solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      font-size: 1.25rem;
+      color: #fff;
+      background: #450084;
+      transition: border-color 0.2s ease-in-out;
+      margin-left: -1.0rem;
+      padding-left: 1.5rem;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: #6633cc;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #7e4ee8;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    p.privacy {
+      margin-top: 200px;
+      font-size: 13px;
+      display: block;
+      position: absolute;
+      bottom: 0px;
+    }
+    
+    a {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <form action="" method="get">
+    <h1>🖼️🐘 | Tuskshow</h1>
+    <p style="font-weight: bold; margin-bottom: 5px;">instance:</p><input  name="instance" type="text" placeholder="Enter an instance URL" value="" autofocus></input>
+    <p style="font-weight: bold; margin-bottom: 5px;">tag or username:</p><input  name="what" type="text" placeholder="Enter a #tag or @username" value=""></input>
+    <button type="submit">Begin</button>
+    <hr style="margin-top:20px; border-top: 1px solid white; display: block;">
+    <p style="line-height: 24px; text-align: justify;">Tuskshow shows you a gallery of images from a certain instance that are tagged with the given tag, updating dynamically as new images are posted.</p>
+  </form>
+
+  <p class="privacy">
+    Privacy statement: I store the data I need to store to provide the service, and none besides. 
+    I will not look at your data except to fix things when they break. 
+    This is a hobbyist project, service is best-effort.
+    <a href="https://github.com/halcy/MastodonpyExamples/tree/master/08_mastomash">Source code available.</a> <a href="https://mastolab.kal-tsit.halcy.de/">Other Mastodon API experiments.</a> 
+  </p>
+</body>
+</html>

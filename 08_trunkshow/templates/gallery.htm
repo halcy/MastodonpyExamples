@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    // settings
+    const duration = 22000;
+    const switchTime = 20000;
+    let currentImg = null;
+
+    function pickRandomImg() {
+      let galleryImgsA = Array.from(document.querySelectorAll('.galleryimg'))
+      let galleryImgsB = Array.from(document.querySelectorAll('.galleryimg-new'));
+      galleryImgs = galleryImgsA.concat(galleryImgsB)
+      const randomIndex = Math.floor(Math.random() * galleryImgs.length);
+      return galleryImgs[randomIndex];
+    }
+
+    function fadeIn(element) {
+      element.style.display = 'flex';
+      element.style.opacity = 0;
+      let fadeInInterval = setInterval(() => {
+        element.style.opacity = +element.style.opacity + 0.1;
+        if (+element.style.opacity >= 1) {
+          clearInterval(fadeInInterval);
+        }
+      }, 33);
+    }
+
+    function fadeOut(element) {
+      let fadeOutInterval = setInterval(() => {
+        element.style.opacity -= 0.1;
+        if (element.style.opacity <= 0) {
+          clearInterval(fadeOutInterval);
+          element.style.display = 'none';
+        }
+      }, 33);
+    }
+
+    function embiggen(image) {
+      if(image.width > image.height){
+        image.style.width = "100vw";
+        image.style.height = "auto";
+      } else {
+        image.style.width = "auto";
+        image.style.height = "100vh";
+      }
+    }
+
+    function applyKenBurns(element) {
+      const startScale = 1.2 + Math.random() * 0.3;
+      const endScale = 1.2 + Math.random() * 0.3;
+      element.style.transform = `scale(${startScale})`;
+
+      const startX = Math.random() * 200.0 - 100.0;
+      const startY = Math.random() * 200.0 - 100.0;
+      element.style.top = `${startY}px`;
+      element.style.left = `${startX}px`;
+
+      let currentX = startX;
+      let currentY = startY;
+
+      const endX = Math.random() * 200.0 - 100.0;
+      const endY = Math.random() * 200.0 - 100.0;
+
+      const distanceX = endX - startX;
+      const distanceY = endY - startY;
+      const distanceScale = endScale - startScale;
+
+      let startTime = -1;
+
+      function animate(time) {
+        if (startTime == -1) {
+          startTime = time;
+        } 
+        const elapsed = time - startTime;
+        const progress = elapsed / duration;
+        if (progress < 1) {
+          currentX = distanceX * progress;
+          currentY = distanceY * progress;
+          currentScale = startScale + distanceScale * progress;
+          element.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
+          requestAnimationFrame(animate);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function switchImg() {
+      let newImg = pickRandomImg();
+      while(newImg == currentImg) {
+        newImg = pickRandomImg();
+      }
+      fadeOut(currentImg);
+      fadeIn(newImg);
+      applyKenBurns(newImg);
+      currentImg = newImg;
+      setTimeout(switchImg, switchTime);
+    }
+
+    function updateGallery() {
+      var oldImages = document.querySelectorAll(".galleryimg-old");
+      for (var i = 0; i < oldImages.length; i++) {
+        oldImages[i].parentNode.removeChild(oldImages[i]);
+      }
+
+      var currentImages = document.querySelectorAll(".galleryimg");
+      for (var i = 0; i < currentImages.length; i++) {
+        currentImages[i].classList.remove("galleryimg");
+        currentImages[i].classList.add("galleryimg-old");
+      }
+
+      var newImages = document.querySelectorAll(".galleryimg-new");
+      for (var i = 0; i < newImages.length; i++) {
+        newImages[i].classList.remove("galleryimg-new");
+        newImages[i].classList.add("galleryimg");
+      }
+    }
+  </script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #111111;
+      color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    div.galleryimg, div.galleryimg-old, div.galleryimg-new {
+      position: absolute;
+      text-align: center;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    img {
+      display: inline-block;
+    }
+  </style>
+  <script src="https://unpkg.com/htmx.org@1.5.0"></script>
+</head>
+<body>
+  <div class="mainscreen" style="width: 100vw; height: 100vh;">
+    <div class="galleryimg"></div>
+    <div hx-get="posts?first_load=yes" hx-swap="outerHTML" hx-trigger="load">
+      Loading...
+    </div>
+  </div>
+</body>
+</html>

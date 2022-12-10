@@ -1,0 +1,26 @@
+{% for post in posts %}
+    {% for attachment in post.media_attachments %}
+        {% if attachment.type == "image" %}
+            <div class="galleryimg-new">
+                <a href="{{ post.url }}" target="_blank">
+                    {% if attachment.remote_url is not none %}
+                        <img src="{{ attachment.remote_url }}" onload="embiggen(this)" alt="{{ attachment.description }}"></img>
+                    {% else %}
+                        <img src="{{ attachment.url }}" onload="embiggen(this)" alt="{{ attachment.description }}"></img>
+                    {% endif %}
+                </a>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+<div hx-get="posts" hx-swap="outerHTML" hx-trigger="load delay:60s">
+    <script>updateGallery();</script>
+</div>
+{% if first_load == "yes" %} 
+<script>
+currentImg = pickRandomImg();
+fadeIn(currentImg);
+applyKenBurns(currentImg);
+setTimeout(switchImg, switchTime);
+</script>
+{% endif %}
