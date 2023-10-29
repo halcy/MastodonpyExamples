@@ -11,7 +11,7 @@ import locket
 
 from mastodon import Mastodon
 
-global_secret = os.environ["MASTODON_GLOBAL_SECRET"]
+global_secret = os.environ.get("MASTODON_GLOBAL_SECRET", None)
 if global_secret is None or len(global_secret.strip()) == 0:
     raise Exception("Need to have a MASTODON_GLOBAL_SECRET env var")
 
