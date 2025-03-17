@@ -11,6 +11,7 @@ import matplotlib as mpl
 import matplotlib.dates as mdates
 import io
 import copy
+import traceback
 
 sys.path.append("../tooling/")
 import secret_registry
@@ -149,41 +150,44 @@ class LatencyWatcher():
         return self.latency_info_cached
 
     def get_latencies_graph(self, account, account2):
-        if self.latency_dirty[account][account2]:
-            # Refresh cache if needed
-            COLOR = 'white'
-            mpl.rcParams['text.color'] = COLOR
-            mpl.rcParams['axes.labelcolor'] = COLOR
-            mpl.rcParams['xtick.color'] = COLOR
-            mpl.rcParams['ytick.color'] = COLOR
-            mpl.rcParams['axes.edgecolor'] = COLOR
+        if self.latency_dirty[account][account2] or self.latency_plot_cached[account][account2] is None:
+            try:
+                # Refresh cache if needed
+                COLOR = 'white'
+                mpl.rcParams['text.color'] = COLOR
+                mpl.rcParams['axes.labelcolor'] = COLOR
+                mpl.rcParams['xtick.color'] = COLOR
+                mpl.rcParams['ytick.color'] = COLOR
+                mpl.rcParams['axes.edgecolor'] = COLOR
 
-            latency_val = self.get_latencies()[account][account2][0]
-            self.latency_dirty[account][account2] = False
-            latency_copy = copy.deepcopy(self.latency_info)
-            
-            data_x = list(map(lambda x: datetime.datetime.fromtimestamp(x[1]).astimezone(datetime.timezone.utc), latency_copy[account][account2]))
-            data_y = list(map(lambda x: x[0] * 1000, latency_copy[account][account2]))
+                latency_val = self.get_latencies()[account][account2][0]
+                self.latency_dirty[account][account2] = False
+                latency_copy = copy.deepcopy(self.latency_info)
+                
+                data_x = list(map(lambda x: datetime.datetime.fromtimestamp(x[1]).astimezone(datetime.timezone.utc), latency_copy[account][account2]))
+                data_y = list(map(lambda x: x[0] * 1000, latency_copy[account][account2]))
 
-            # Basic matplotlib plot
-            fig = plt.figure(figsize=(3.5, 3.5))
-            ax = fig.add_subplot(111)
-            ax.plot(data_x, data_y, marker="o", color=COLOR)
-            ax.set_title("{} ->\n{}\nMean[50]: {}ms".format(account[1], account2[1], str(round(latency_val * 1000, 2)) + "ms" ))
-            ax.set_xlabel("Time")
-            ax.set_ylabel("Latency [ms]")
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b%d\n%H:%M'))
-            ax.set_xticks(list(map(
-                lambda x: datetime.datetime.fromtimestamp(x).astimezone(datetime.timezone.utc),
-                np.linspace(data_x[0].timestamp(), data_x[-1].timestamp(), 5)
-            )))
-            ax.set_xlim(data_x[0], data_x[-1])
-            fig.tight_layout()
+                # Basic matplotlib plot
+                fig = plt.figure(figsize=(3.5, 3.5))
+                ax = fig.add_subplot(111)
+                ax.plot(data_x, data_y, marker="o", color=COLOR)
+                ax.set_title("{} ->\n{}\nMean[50]: {}ms".format(account[1], account2[1], str(round(latency_val * 1000, 2)) + "ms" ))
+                ax.set_xlabel("Time")
+                ax.set_ylabel("Latency [ms]")
+                ax.xaxis.set_major_formatter(mdates.DateFormatter('%b%d\n%H:%M'))
+                ax.set_xticks(list(map(
+                    lambda x: datetime.datetime.fromtimestamp(x).astimezone(datetime.timezone.utc),
+                    np.linspace(data_x[0].timestamp(), data_x[-1].timestamp(), 5)
+                )))
+                ax.set_xlim(data_x[0], data_x[-1])
+                fig.tight_layout()
 
-            # Save the figure to a PNG file in memory
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png', transparent=True, bbox_inches=0)
+                # Save the figure to a PNG file in memory
+                buf = io.BytesIO()
+                fig.savefig(buf, format='png', transparent=True, bbox_inches=0)
 
-            # Get the PNG image data from the BytesIO object
-            self.latency_plot_cached[account][account2] = buf.getvalue()
+                # Get the PNG image data from the BytesIO object
+                self.latency_plot_cached[account][account2] = buf.getvalue()
+            except Exception as e:
+                traceback.print_exc()
         return self.latency_plot_cached[account][account2]

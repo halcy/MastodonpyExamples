@@ -91,16 +91,21 @@ def posts():
     # Get posts
     what = session["what"]
     is_tag = False
+    local_tag = None
     if what.startswith("#"):
         what = what[1:]
         is_tag = True
+        if what.startswith("#"):
+            is_tag = True
+            what = what[1:]
+            local_tag = True
     elif what.startswith("@"):
         what = what[1:]
         is_tag = False
     else:
         is_tag = True
     if is_tag:
-        posts = api.timeline_hashtag(what, only_media = True, local = True)
+        posts = api.timeline_hashtag(what, only_media = True, local = local_tag)
     else:
         account = api.account_lookup(what)
         posts = api.account_statuses(account, only_media = True)

@@ -41,6 +41,7 @@ secret_registry.release_credentials()
 # Start oauth flow
 api = Mastodon(client_id = client_credential)
 oauth_url = api.auth_request_url(scopes = SCOPES_TO_REQUEST)
+print(oauth_url)
 webbrowser.open_new(oauth_url)
 time.sleep(3)
 print("\n\n")

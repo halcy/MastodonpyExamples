@@ -97,3 +97,6 @@ Pipfile
 
 # pytest trash
 .pytest_cache
+
+*.secret
+

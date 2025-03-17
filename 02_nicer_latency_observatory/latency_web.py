@@ -92,12 +92,12 @@ def base_page():
 @app.route('/plot', methods=['GET'])
 def send_png():
     args = request.args
-    account = accounts[min(max(0, int(args.get("acc1"))), len(accounts) - 1)]
-    account2 = accounts[min(max(0, int(args.get("acc2"))), len(accounts) - 1)]
+    account = accounts[min(max(0, int(args.get("acc2"))), len(accounts) - 1)]
+    account2 = accounts[min(max(0, int(args.get("acc1"))), len(accounts) - 1)]
     binary_data = watcher.get_latencies_graph(account, account2)
     resp = make_response(binary_data)
     resp.headers['Content-Type'] = "image/png"
     return resp
 
 if __name__ == '__main__':
-    app.run()
+    app.run("0.0.0.0")
