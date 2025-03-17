@@ -1,0 +1,12 @@
+{% include 'header.html' %}
+<div id="text">
+    <p>You're logged in as: <strong>{{ masto_user_full }}</strong></p>
+    {% if phone_number != "" %}
+        <p>Current phone number: <strong>{{ phone_number }}</strong>. You're set up for posting, just send your messages or give a call to <strong>{{ phone_reg_number }}</strong>!</p>
+    {% endif %}
+    <p>To set a phone number, send a SMS with text <strong>--register-{{ phone_reg_code }}</strong> to <strong>{{ phone_reg_number }}</strong> or scan the following QR code if you're too lazy to type:</p>
+</div>    
+<p><img src="/qr?phone_reg_code={{ phone_reg_code }}"></img></p>
+<p><a href="/qr?phone_reg_code={{ phone_reg_code }}&amp;boring=1">(boring qr code for bad phones)</a></p>
+<p><a href="/logout">log off</a></p>
+{% include 'footer.html' %}
