@@ -8,7 +8,7 @@ accounts = [
     ("halcy", "mastodon.social"),
     ("halcy", "glitch.social"),
     ("latencyobs", "icosahedron.website"),
-    ("latencyobs", "botsin.space"),
+    #("latencyobs", "botsin.space"),
     ("halcy", "hachyderm.io"),
 ]
 

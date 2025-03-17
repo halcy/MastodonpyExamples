@@ -10,3 +10,4 @@ torchaudio
 transformers
 fast-pytorch-kmeans
 htmx
+twilio
