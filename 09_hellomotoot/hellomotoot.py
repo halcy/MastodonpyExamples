@@ -25,12 +25,12 @@ import re
 TWILIO_NUMBER = "+12318668464"
 TWILIO_NUMBER_DISP = "+1 (231) TOOTING / +1 (231) 866 8464"
 DB_FILE = "users.db"
-BASE_URL = "http://mastolab.kal-tsit.halcy.de/day09"
+BASE_URL = "http://mastolab.kal-tsit.halcy.de/day09/"
 
 # load secret values from a file excluded from git
 with open("twilio.secret", 'r') as f:
     lines = f.readlines()
-TWILIO_AUTH_TOKEN = lines[0]
+TWILIO_AUTH_TOKEN = lines[0].strip("\n")
 SECRET_KEY = lines[1]
 
 ##
@@ -139,17 +139,18 @@ def validate_twilio_request(f):
     def decorated_function(*args, **kwargs):
         # Create an instance of the RequestValidator class
         validator = RequestValidator(TWILIO_AUTH_TOKEN)
-
+        
         # Validate the request using its URL, POST data,
         # and X-TWILIO-SIGNATURE header
         request_valid = validator.validate(
-            request.url,
+            request.url.replace("mastolab.kal-tsit.halcy.de,mastolab.kal-tsit.halcy.de", "mastolab.kal-tsit.halcy.de/day09"),
             request.form,
             request.headers.get('X-TWILIO-SIGNATURE', ''))
 
         # Continue processing the request if it's valid, return a 403 error if
         # it's not
         if request_valid:
+            print("IS VALID")
             return f(*args, **kwargs)
         else:
             return abort(403)
@@ -158,7 +159,7 @@ def validate_twilio_request(f):
 # Error helper
 def error(text):
     flash(text)
-    return redirect("/")
+    return redirect(BASE_URL)
 
 ##
 # Web UI
@@ -168,7 +169,7 @@ def error(text):
 @app.route("/")
 def index():
     if "masto_app_url" in session and "access_token" in session:
-        return redirect("/manage")
+        return redirect(BASE_URL + "manage")
     return(render_template('index.html'))
 
 # Oauth flow start
@@ -206,7 +207,7 @@ def oauth():
         access_token = api_unauthed.log_in(code = code, redirect_uri = get_oauth_callback_url(masto_app_url))
         session["masto_app_url"] = masto_app_url
         session["access_token"] = access_token
-        return redirect("/")
+        return redirect(BASE_URL)
     except:
         return error("Something broke in oauth flow end, it is unclear what.")
 

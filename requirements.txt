@@ -11,3 +11,4 @@ transformers
 fast-pytorch-kmeans
 htmx
 twilio
+qrcode

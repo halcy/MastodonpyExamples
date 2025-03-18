@@ -19,7 +19,7 @@ from mastodon import Mastodon, streaming
 
 # Settings
 CLIENT_NAME = "TootItForward"
-APP_PREFIX = "day05_tootitforward"
+APP_PREFIX = "day05_tootitforward_r1"
 MASTO_SECRET = os.environ["MASTODON_SECRET"]
 SCOPES_TO_REQUEST = ["read:accounts", "read:statuses", "write:statuses"]
 SCOPES_FALLBACK = ["read", "write"]
@@ -254,6 +254,9 @@ def auth():
 def login():
     # Sanity check post
     new_post = request.form['new_post'].strip()
+    new_post.replace("@", " ").strip()
+    new_post.replace("http://", "").strip()
+    new_post.replace("https://", "").strip()
     if len(new_post) >= 499 or len(new_post) == 0:
         return redirect(APP_BASE_URL)
 
